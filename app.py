@@ -10,7 +10,7 @@ app = Flask(__name__)
 def get_db():
     if not hasattr(g, 'Graph DBMS'):
         g.neo4j_db = Graph(
-            os.getenv('ADT_proj'),
+            os.getenv('ADT'),
             auth=(os.getenv('neo4j'), os.getenv('password'))
         )
     return g.neo4j_db

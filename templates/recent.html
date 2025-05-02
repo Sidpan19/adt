@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h2 class="mb-4">Recent Arrests (Last 30 Days)</h2>
+<table class="table table-striped table-hover">
+    <thead class="table-dark">
+        <tr>
+            <th>Age Group</th>
+            <th>Gender</th>
+            <th>Race</th>
+            <th>Arrest Count</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for row in data %}
+<tr>
+    <td>{{ row.age_group }}</td>  <!-- Changed from row.p.age_group -->
+    <td>{{ row.sex }}</td>        <!-- Changed from row.p.sex -->
+    <td>{{ row.race }}</td>       <!-- Changed from row.p.race -->
+    <td>{{ row.count }}</td>
+</tr>
+{% endfor %}
+
+    </tbody>
+</table>
+{% endblock %}
