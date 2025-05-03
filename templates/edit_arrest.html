@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1>Edit Arrest {{ arrest.id }}</h1>
+    <form method="post">
+        <div class="form-group">
+            <label for="arrest_key">Arrest Key (read-only)</label>
+            <input type="text" class="form-control" id="arrest_key" value="{{ arrest.id }}" readonly>
+        </div>
+        <div class="form-group">
+            <label for="arrest_date">Arrest Date</label>
+            <input type="date" class="form-control" name="arrest_date" id="arrest_date" value="{{ arrest.date }}" required>
+        </div>
+        <button type="submit" class="btn btn-success">💾 Update</button>
+        <a href="{{ url_for('list_arrests') }}" class="btn btn-secondary">Cancel</a>
+    </form>
+</div>
+{% endblock %}
