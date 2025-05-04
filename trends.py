@@ -100,6 +100,19 @@ def fetch_arrests_by_age_group():
         for record in db.run(query).data()
     ]
 
+def fetch_arrest_locations():
+    """
+    Returns a list of {"lat": float, "lon": float} for every Arrest node
+    linked via OCCURRED_AT → Location (where both coords are non-null).
+    """
+    db = get_db()
+    query = """
+    MATCH (a:Arrest)-[:OCCURRED_AT]->(loc:Location)
+    WHERE loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL
+    RETURN loc.latitude AS lat, loc.longitude AS lon limit 2000
+    """
+    # db.run(query).data() gives list of dicts: [{'lat': ..., 'lon': ...}, …]
+    return db.run(query).data()
 
 @trends_bp.route('')
 def show_trends():
@@ -108,10 +121,12 @@ def show_trends():
     race_data = fetch_arrests_by_race()
     age_data     = fetch_arrests_by_age_group()   # now uses the stored property
     charges_data = fetch_top_charges()
+    locations=fetch_arrest_locations()
     return render_template(
         'trends.html',
         data=data,
         race_data=race_data,
         age_data=age_data,
-        charges_data=charges_data
+        charges_data=charges_data,
+        locations=locations
     )

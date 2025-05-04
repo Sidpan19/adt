@@ -1,5 +1,6 @@
 from connection import *
 from trends import trends_bp
+from locations import locations_bp
 from dotenv import load_dotenv
 
 load_dotenv
@@ -41,6 +42,7 @@ def recent_arrests():
     return render_template('recent.html', data=results)
 
 app.register_blueprint(trends_bp)
+app.register_blueprint(locations_bp)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
