@@ -206,16 +206,49 @@ def delete_arrest(arrest_key):
 
 # --- Public data pages ---
 
-@app.route("/demographics")
+@app.route('/demographics')
 def demographics():
     db = get_db()
-    results = db.run("""
-    MATCH (p:Person)<-[:INVOLVES]-(a:Arrest)-[:HAS_CHARGE]->(c:Charge)
-    WHERE p.age_group = '25-44'
-    RETURN p.age_group AS age, p.sex AS gender, p.race AS race, COUNT(a) AS count
-    ORDER BY count DESC LIMIT 25
-    """).data()
-    return render_template("demographics.html", data=results)
+    query = """
+    // Overall statistics
+    MATCH (p:Person)<-[:INVOLVES]-(a:Arrest)
+    WITH count(a) as total_arrests
+    
+    // Race breakdown
+    MATCH (p:Person)<-[:INVOLVES]-(a:Arrest)
+    WITH total_arrests, p.race as race, count(a) as count
+    WHERE race IS NOT NULL
+    WITH total_arrests, collect({race: race, count: count, percentage: toFloat(count)/total_arrests*100}) as race_stats
+    
+    // Gender breakdown
+    MATCH (p:Person)<-[:INVOLVES]-(a:Arrest)
+    WITH total_arrests, race_stats, p.sex as gender, count(a) as count
+    WHERE gender IS NOT NULL
+    WITH total_arrests, race_stats, collect({gender: gender, count: count, percentage: toFloat(count)/total_arrests*100}) as gender_stats
+    
+    // Age group breakdown
+    MATCH (p:Person)<-[:INVOLVES]-(a:Arrest)
+    WITH total_arrests, race_stats, gender_stats, p.age_group as age, count(a) as count
+    WHERE age IS NOT NULL
+    WITH total_arrests, race_stats, gender_stats, collect({age: age, count: count, percentage: toFloat(count)/total_arrests*100}) as age_stats
+    
+    // Top charges
+    MATCH (a:Arrest)-[:HAS_CHARGE]->(c:Charge)
+    WITH total_arrests, race_stats, gender_stats, age_stats, c.pd_desc as charge, count(a) as count
+    ORDER BY count DESC LIMIT 10
+    WITH total_arrests, race_stats, gender_stats, age_stats, collect({charge: charge, count: count, percentage: toFloat(count)/total_arrests*100}) as top_charges
+    
+    // Top boroughs
+    MATCH (a:Arrest)-[:OCCURRED_AT]->(l)
+    WITH total_arrests, race_stats, gender_stats, age_stats, top_charges, l.boro as borough, count(a) as count
+    WHERE borough IS NOT NULL
+    ORDER BY count DESC
+    WITH total_arrests, race_stats, gender_stats, age_stats, top_charges, collect({borough: borough, count: count, percentage: toFloat(count)/total_arrests*100}) as borough_stats
+    
+    RETURN total_arrests, race_stats, gender_stats, age_stats, top_charges, borough_stats
+    """
+    results = db.run(query).data()
+    return render_template('demographics.html', stats=results[0])
 
 @app.route("/recent")
 def recent_arrests():
