@@ -1,24 +1,9 @@
-from flask import Flask, render_template, g
-from py2neo import Graph
-import os
+from connection import *
+from trends import trends_bp
 from dotenv import load_dotenv
 
-load_dotenv()
-
+load_dotenv
 app = Flask(__name__)
-
-def get_db():
-    if not hasattr(g, 'Graph DBMS'):
-        g.neo4j_db = Graph(
-            os.getenv('ADT'),
-            auth=(os.getenv('neo4j'), os.getenv('password'))
-        )
-    return g.neo4j_db
-
-@app.teardown_appcontext
-def close_db(error):
-    if hasattr(g, 'Graph DBMS'):
-        g.neo4j_db = None
 
 @app.route('/')
 def index():
@@ -55,19 +40,7 @@ def recent_arrests():
     results = db.run(query).data()
     return render_template('recent.html', data=results)
 
-
-@app.route('/trends')
-def arrest_trends():
-    db = get_db()
-    query = """
-    CALL { MATCH (a:Arrest) RETURN max(a.arrest_date) AS latest }
-    MATCH (a:Arrest)
-    WHERE a.arrest_date >= latest - duration({days: 14})
-    RETURN a.arrest_date AS date, COUNT(*) AS arrests
-    ORDER BY date
-    """
-    results = db.run(query).data()
-    return render_template('trends.html', data=results)
+app.register_blueprint(trends_bp)
 
 if __name__ == '__main__':
     app.run(host='127.0.0.1', port=8080, debug=True)
