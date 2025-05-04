@@ -1,62 +1,195 @@
-{% extends "base.html" %}
-
-{% block content %}
-<h2 class="mb-4">Arrest Trends (Last 14 Days)</h2>
-
-<div class="row">
-    <div class="col-md-8">
-        <canvas id="trendChart"></canvas>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>NYPD Arrest Analysis — Trends</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/styles.css') }}">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+  <style>
+    .chart-container {
+      position: relative;
+      width: 100%;
+      height: 400px;
+      margin-bottom: 2rem;
+    }
+  </style>
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="/">Crime Analysis</a>
+      <div class="collapse navbar-collapse">
+        <ul class="navbar-nav me-auto">
+          <li class="nav-item"><a class="nav-link" href="/demographics">Demographics</a></li>
+          <li class="nav-item"><a class="nav-link" href="/recent">Recent Arrests</a></li>
+          <li class="nav-item"><a class="nav-link active" aria-current="page" href="/trends">Trends</a></li>
+          <li class="nav-item"><a class="nav-link" aria-current="page" href="/locations">Map</a></li>
+        </ul>
+      </div>
     </div>
-    <div class="col-md-4">
-        <table class="table table-striped">
-            <thead class="thead-dark">
-                <tr>
-                    <th>Date</th>
-                    <th>Arrests</th>
-                </tr>
-            </thead>
-            <tbody>
-                {% for row in data %}
-                <tr>
-                    <td>{{ row.date }}</td>
-                    <td>{{ row.arrests }}</td>
-                </tr>
-                {% endfor %}
-            </tbody>
-        </table>
+  </nav>
+
+  <div class="container mt-4">
+    <!-- 1) 14‑Day Arrest Trend -->
+    <h2 class="mb-4">Arrest Trends (Last 14 Days)</h2>
+    <div class="chart-container">
+      <canvas id="trendChart"></canvas>
     </div>
-</div>
 
-<!-- Add Chart.js for visualization -->
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<script>
-    const ctx = document.getElementById('trendChart');
-    const dates = [{% for row in data %}"{{ row.date }}"{% if not loop.last %},{% endif %}{% endfor %}];
-    const arrests = [{% for row in data %}{{ row.arrests }}{% if not loop.last %},{% endif %}{% endfor %}];
+    <!-- 2) Arrests by Race -->
+    <h2 class="mb-4">Arrests by Race</h2>
+    <div class="chart-container">
+      <canvas id="raceChart"></canvas>
+    </div>
 
-    new Chart(ctx, {
+    <!-- 3) Arrests by Age Group -->
+    <h2 class="mb-4">Arrests by Age Group</h2>
+    <div class="chart-container">
+      <canvas id="ageChart"></canvas>
+    </div>
+
+    <!-- 4) Top 5 Charges (with “Other”) -->
+    <h2 class="mb-4">Top 5 Charges</h2>
+    <div class="chart-container">
+      <canvas id="chargesChart"></canvas>
+    </div>
+  </div>
+
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script>
+    // Data passed from Flask
+    
+    const trendData   = {{ data|tojson }};
+    const raceData    = {{ race_data|tojson }};
+    const ageData     = {{ age_data|tojson }};
+    const chargesData = {{ charges_data|tojson }};
+
+    // 1) Line chart: 14‑day arrest trend
+    new Chart(
+      document.getElementById('trendChart').getContext('2d'), {
         type: 'line',
         data: {
-            labels: dates,
-            datasets: [{
-                label: 'Daily Arrests',
-                data: arrests,
-                borderColor: 'rgb(75, 192, 192)',
-                tension: 0.1
-            }]
+          labels: trendData.map(r => r.date),
+          datasets: [{
+            label: 'Daily Arrests',
+            data: trendData.map(r => r.arrests),
+            borderColor: 'rgb(75,192,192)',
+            tension: 0.1
+          }]
         },
         options: {
-            responsive: true,
-            plugins: {
-                legend: {
-                    position: 'top',
-                },
-                title: {
-                    display: true,
-                    text: '14-Day Arrest Trend'
-                }
-            }
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'top' },
+            title: { display: true, text: '14‑Day Arrest Trend' }
+          }
         }
-    });
-</script>
-{% endblock %}
+      }
+    );
+
+    // 2) Bar chart: arrests by race
+    (function() {
+      const ctx = document.getElementById('raceChart').getContext('2d');
+      const maxCount = Math.max(...raceData.map(r => r.count));
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: raceData.map(r => r.race),
+          datasets: [{
+            label: 'Count',
+            data: raceData.map(r => r.count),
+            backgroundColor: 'rgba(54,162,235,0.5)',
+            borderColor: 'rgb(54,162,235)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              max: Math.ceil(maxCount * 1.1),
+              ticks: { stepSize: Math.ceil(maxCount / 5) },
+              title: { display: true, text: 'Arrest Count' }
+            },
+            x: {
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Arrests by Race' }
+          }
+        }
+      });
+    })();
+
+    // 3) Bar chart: arrests by age group
+    (function() {
+      const ctx = document.getElementById('ageChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'bar',
+        data: {
+          labels: ageData.map(a => a.age_group),
+          datasets: [{
+            label: 'Count',
+            data: ageData.map(a => a.count),
+            backgroundColor: 'rgba(255,159,64,0.5)',
+            borderColor: 'rgb(255,159,64)',
+            borderWidth: 1
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          scales: {
+            y: {
+              beginAtZero: true,
+              title: { display: true, text: 'Arrest Count' }
+            },
+            x: {
+              ticks: { autoSkip: false, maxRotation: 45, minRotation: 45 }
+            }
+          },
+          plugins: {
+            legend: { display: false },
+            title: { display: true, text: 'Arrests by Age Group' }
+          }
+        }
+      });
+    })();
+
+    // 4) Doughnut chart: top 5 charges + Other
+    (function() {
+      const ctx = document.getElementById('chargesChart').getContext('2d');
+      new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+          labels: chargesData.map(c => c.charge),
+          datasets: [{
+            data: chargesData.map(c => c.count),
+            backgroundColor: [
+              '#4dc9f6','#f67019','#f53794',
+              '#537bc4','#acc236','#e4c1f9'
+            ]
+          }]
+        },
+        options: {
+          responsive: true,
+          maintainAspectRatio: false,
+          plugins: {
+            legend: { position: 'right' },
+            title: { display: true, text: 'Top 5 Charges' }
+          }
+        }
+      });
+    })();
+  </script>
+</body>
+</html>

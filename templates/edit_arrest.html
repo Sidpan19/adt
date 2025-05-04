@@ -1,19 +1,27 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-4">
-    <h1>Edit Arrest {{ arrest.id }}</h1>
-    <form method="post">
-        <div class="form-group">
-            <label for="arrest_key">Arrest Key (read-only)</label>
-            <input type="text" class="form-control" id="arrest_key" value="{{ arrest.id }}" readonly>
-        </div>
-        <div class="form-group">
-            <label for="arrest_date">Arrest Date</label>
-            <input type="date" class="form-control" name="arrest_date" id="arrest_date" value="{{ arrest.date }}" required>
-        </div>
-        <button type="submit" class="btn btn-success">💾 Update</button>
-        <a href="{{ url_for('list_arrests') }}" class="btn btn-secondary">Cancel</a>
-    </form>
-</div>
+<h2>Edit Arrest {{ arrest.id }}</h2>
+<form method="POST">
+    <label>Arrest Date (YYYY-MM-DD):</label>
+    <input name="arrest_date" value="{{ arrest.date }}" class="form-control"><br>
+    <label>Age Group:</label>
+    <input name="age_group" value="{{ arrest.age_group }}" class="form-control"><br>
+    <label>Sex:</label>
+    <input name="sex" value="{{ arrest.sex }}" class="form-control"><br>
+    <label>Race:</label>
+    <input name="race" value="{{ arrest.race }}" class="form-control"><br>
+    <label>Charge Description (pd_desc):</label>
+    <input name="pd_desc" value="{{ arrest.pd_desc }}" class="form-control"><br>
+    <label>Offense Description (ofns_desc):</label>
+    <input name="ofns_desc" value="{{ arrest.ofns_desc }}" class="form-control"><br>
+    <label>Law Category:</label>
+    <input name="law_cat_cd" value="{{ arrest.law_cat_cd }}" class="form-control"><br>
+    <label>Borough:</label>
+    <input name="boro" value="{{ arrest.boro }}" class="form-control"><br>
+    <label>Precinct:</label>
+    <input name="precinct" value="{{ arrest.precinct }}" class="form-control"><br>
+    <label>Latitude:</label><input name="latitude" class="form-control"><br>
+    <label>Longitude:</label><input name="longitude" class="form-control"><br>
+    <button type="submit" class="btn btn-primary">Update</button>
+</form>
 {% endblock %}

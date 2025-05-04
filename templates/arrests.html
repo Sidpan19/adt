@@ -1,47 +1,30 @@
 {% extends "base.html" %}
-
 {% block content %}
-<div class="container mt-4">
-    <h1>Arrest Records</h1>
+<h2>Arrests List</h2>
+<a href="{{ url_for('new_arrest') }}" class="btn btn-success">Add New Arrest</a>
 
-    <a href="{{ url_for('new_arrest') }}" class="btn btn-success mb-3">➕ Add New Arrest</a>
-
-    <form action="{{ url_for('edit_arrest_input') }}" method="post" class="form-inline mb-4">
-        <label for="arrest_key_input" class="mr-2">Edit Arrest by ID:</label>
-        <input type="text" name="arrest_key" id="arrest_key_input" class="form-control mr-2" placeholder="Enter Arrest Key" required>
-        <button type="submit" class="btn btn-primary">Go Edit</button>
-    </form>
-
-    <table class="table table-bordered table-striped">
-        <thead class="thead-dark">
-            <tr>
-                <th>Arrest Key</th>
-                <th>Date</th>
-                <th>Person</th>
-                <th>Actions</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for arrest in arrests %}
-            <tr>
-                <td>{{ arrest.id }}</td>
-                <td>{{ arrest.date }}</td>
-                <td>{{ arrest.person }}</td>
-                <td>
-                    {% if arrest.id %}
-                        <a href="{{ url_for('edit_arrest', arrest_key=arrest.id) }}" class="btn btn-warning btn-sm">✏️ Edit</a>
-                        <form action="{{ url_for('delete_arrest', arrest_key=arrest.id) }}" method="post" style="display:inline;">
-                            <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Delete this record?')">🗑️ Delete</button>
-                        </form>
-                    {% else %}
-                        <span class="badge badge-secondary">No ID</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-
-    <a href="{{ url_for('index') }}" class="btn btn-secondary">⬅️ Back to Home</a>
-</div>
+<table class="table table-striped">
+    <thead>
+        <tr>
+            <th>ID</th><th>Date</th><th>Person</th><th>Charge</th><th>Location</th><th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for arrest in arrests %}
+        <tr>
+            <td>{{ arrest.id }}</td>
+            <td>{{ arrest.date }}</td>
+            <td>{{ arrest.age_group }} / {{ arrest.sex }} / {{ arrest.race }}</td>
+            <td>{{ arrest.pd_desc }} / {{ arrest.ofns_desc }} / {{ arrest.law_cat_cd }}</td>
+            <td>{{ arrest.boro }} / {{ arrest.precinct }}</td>
+            <td>
+                <a href="{{ url_for('edit_arrest', arrest_key=arrest.id) }}" class="btn btn-warning btn-sm">Edit</a>
+                <form action="{{ url_for('delete_arrest', arrest_key=arrest.id) }}" method="POST" style="display:inline;">
+                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                </form>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
 {% endblock %}
