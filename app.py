@@ -12,10 +12,8 @@ def get_db():
         g.neo4j_db = Graph(
             os.getenv('ADT'),
             auth=(os.getenv('neo4j'), os.getenv('password')),
-            name=os.getenv('DATABASE')  # ✅ explicitly set database
-
+            name=os.getenv('DATABASE')  
         )  
-    print('yasssssssssss')
     return g.neo4j_db
 
 @app.teardown_appcontext
