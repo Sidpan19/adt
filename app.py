@@ -10,7 +10,7 @@ from connection import get_db
 from trends import trends_bp
 from locations import locations_bp
 
-# Load environment variables from .env
+
 load_dotenv()
 
 app = Flask(__name__)
@@ -21,7 +21,7 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
 
-# Simple in‑memory user representation
+
 class User(UserMixin):
     def __init__(self, username):
         self.id = username
@@ -36,7 +36,6 @@ def load_user(user_id):
         return User(user_id)
     return None
 
-# --- Register blueprints ---
 app.register_blueprint(trends_bp, url_prefix="/trends")
 app.register_blueprint(locations_bp, url_prefix="/locations")
 
