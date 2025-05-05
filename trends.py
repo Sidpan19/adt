@@ -19,7 +19,6 @@ def fetch_arrest_data():
     ORDER BY date
     """
     raw = db.run(query).data()
-    # convert Python dates to ISO strings
     return [
         {
           "date": record["date"].isoformat(), 
@@ -66,7 +65,7 @@ def fetch_top_charges():
       MATCH (a:Arrest)-[:CHARGED]->(c:Charge)
       WHERE c.ofns_desc IS NOT NULL
       RETURN COUNT(a) AS total
-    """).data()[0]   # first (and only) row as a dict
+    """).data()[0]  
 
     total       = total_row["total"]
     top5_sum    = sum(rec["cnt"] for rec in top5)
@@ -111,15 +110,14 @@ def fetch_arrest_locations():
     WHERE loc.latitude IS NOT NULL AND loc.longitude IS NOT NULL
     RETURN loc.latitude AS lat, loc.longitude AS lon limit 2000
     """
-    # db.run(query).data() gives list of dicts: [{'lat': ..., 'lon': ...}, …]
+    
     return db.run(query).data()
 
 @trends_bp.route('')
 def show_trends():
-    # compose all the data
     data = fetch_arrest_data()
     race_data = fetch_arrests_by_race()
-    age_data     = fetch_arrests_by_age_group()   # now uses the stored property
+    age_data     = fetch_arrests_by_age_group()  
     charges_data = fetch_top_charges()
     locations=fetch_arrest_locations()
     return render_template(

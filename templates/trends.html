@@ -59,10 +59,9 @@
     </div>
   </div>
 
-  <!-- Chart.js -->
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
   <script>
-    // Data passed from Flask
     
     const trendData   = {{ data|tojson }};
     const raceData    = {{ race_data|tojson }};
@@ -166,7 +165,7 @@
       });
     })();
 
-    // 4) Doughnut chart: top 5 charges + Other
+    // 4) Doughnut chart: top 5 charges
     (function() {
       const ctx = document.getElementById('chargesChart').getContext('2d');
       new Chart(ctx, {

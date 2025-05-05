@@ -18,9 +18,8 @@ def fetch_arrest_locations():
 def show_locations():
     # 1) get list of points
     pts = fetch_arrest_locations()
-    df  = pd.DataFrame(pts)  # columns ['lat','lon']
+    df  = pd.DataFrame(pts)  
 
-    # 2) build a Mapbox scatter with open-street-map style
     fig = px.scatter_mapbox(
         df,
         lat='lat',
@@ -38,8 +37,5 @@ def show_locations():
         margin=dict(l=0, r=0, t=0, b=0)
     )
 
-    # 3) get embeddable HTML
     map_html = fig.to_html(full_html=False, include_plotlyjs='cdn')
-
-    # 4) render
     return render_template('locations.html', map_html=map_html)

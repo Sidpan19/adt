@@ -21,7 +21,6 @@ login_manager = LoginManager()
 login_manager.login_view = "login"
 login_manager.init_app(app)
 
-# Simple in‑memory user representation
 class User(UserMixin):
     def __init__(self, username):
         self.id = username

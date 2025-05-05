@@ -3,7 +3,6 @@ from flask import Flask, render_template, g
 from py2neo import Graph
 from dotenv import load_dotenv
 
-# load .env into os.environ
 load_dotenv()
 
 def get_db():
